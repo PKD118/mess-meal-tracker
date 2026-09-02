@@ -1,0 +1,62 @@
+{
+  "tabs": {
+    "dashboard": "ড্যাশবোর্ড",
+    "planner": "প্ল্যানার",
+    "history": "ইতিহাস"
+  },
+  "common": {
+    "appName": "মেস মিল ট্র্যাকার",
+    "noon": "দুপুর",
+    "night": "রাত",
+    "both": "উভয়",
+    "on": "অন",
+    "off": "অফ",
+    "save": "সংরক্ষণ করুন",
+    "cancel": "ক্যান্সেল",
+    "yes": "হ্যাঁ",
+    "no": "না",
+    "guests": "গেস্ট",
+    "loading": "লোড হচ্ছে…",
+    "retry": "আবার চেষ্টা করুন",
+    "errorGeneric": "কিছু ভুল হয়েছে।"
+  },
+  "login": {
+    "email": "ইমেইল",
+    "password": "পাসওয়ার্ড",
+    "submit": "লগ ইন করুন",
+    "error": "ভুল ইমেইল বা পাসওয়ার্ড।",
+    "contactManager": "লগ ইন করতে সমস্যা হচ্ছে? আপনার ম্যানেজারের সাথে যোগাযোগ করুন।"
+  },
+  "dashboard": {
+    "today": "আজ",
+    "yourTotal": "আপনার মোট",
+    "messTotals": "আজকের মেস মোট",
+    "roster": "কে খাচ্ছে দেখুন",
+    "rosterHide": "লুকান",
+    "monthToDate": "এই মাসে",
+    "meals": "টি খাবার",
+    "plannerButton": "আগামী ১০ দিনের পরিকল্পনা",
+    "managerCardTitle": "মেসের খাবার বাতিল করুন",
+    "cancelNoon": "দুপুরের খাবার বাতিল",
+    "cancelNight": "রাতের খাবার বাতিল",
+    "cutoffPassed": "সময়সীমা পার হয়েছে",
+    "emptyTitle": "এখনও কোনো খাবারের তথ্য নেই"
+  },
+  "planner": {
+    "title": "খাবার পরিকল্পনা",
+    "cancelledByMess": "মেস দ্বারা বাতিল",
+    "saveDay": "সংরক্ষণ করুন"
+  },
+  "history": {
+    "title": "ইতিহাস",
+    "empty": "এখনও কোনো বন্ধের দিন নেই",
+    "offBySelf": "আপনি এটি বন্ধ করেছেন",
+    "offByMess": "মেস-ব্যাপী বাতিল হয়েছে"
+  },
+  "dialogs": {
+    "confirmSaveToday": "আজকের পরিবর্তন সংরক্ষণ করবেন?",
+    "confirmSaveDate": "{{date}}-এর পরিবর্তন সংরক্ষণ করবেন?",
+    "guestCancelQuestion": "{{slot}}-এর জন্য আপনার {{count}}টি অতিথি খাবার আছে। সেগুলোও বাতিল করবেন?",
+    "managerCancelConfirm": "আজ সবার জন্য {{slot}} বাতিল করবেন?"
+  }
+}

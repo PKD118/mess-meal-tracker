@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// Cutoff model: a mealDays field may only change value (from what it currently
+// is, defaulting to false/0 if the doc doesn't exist yet) before that field's
+// slot cutoff. Noon cutoff = 03:00 UTC on `date` (09:00 Dhaka). Night cutoff =
+// 12:00 UTC on `date` (18:00 Dhaka). Bangladesh has no DST, so this fixed UTC
+// offset is safe. Unchanged-value writes are always allowed regardless of time.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isManager() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isManager == true;
+    }
+
+    function guestInRange(n) {
+      return n is int && n >= 0 && n <= 5;
+    }
+
+    function dateAtUtc(date) {
+      let parts = date.split('-');
+      return timestamp.date(int(parts[0]), int(parts[1]), int(parts[2]));
+    }
+
+    function slotOf(field) {
+      return (field == 'noon' || field == 'noonGuests') ? 'noon' : 'night';
+    }
+
+    function beforeCutoff(date, slot) {
+      return request.time < dateAtUtc(date) + duration.value(slot == 'noon' ? 3 : 12, 'h');
+    }
+
+    function priorValue(field) {
+      return resource != null
+        ? resource.data[field]
+        : ((field == 'noonGuests' || field == 'nightGuests') ? 0 : false);
+    }
+
+    function fieldOk(field) {
+      return request.resource.data[field] == priorValue(field)
+        || beforeCutoff(request.resource.data.date, slotOf(field));
+    }
+
+    match /users/{uid} {
+      // Full profile readable by any signed-in member (small, trusted mess).
+      allow read: if isSignedIn();
+      // Members are enrolled (name/phone/isManager) by an admin via console/admin
+      // SDK. The one self-service exception: a member may update their own
+      // `locale` preference — and nothing else, so isManager can't be
+      // self-escalated through this door.
+      allow update: if isSignedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['locale'])
+        && request.resource.data.locale in ['en', 'bn'];
+      allow create, delete: if false;
+    }
+
+    match /mealDays/{docId} {
+      // Roster + history views need to read everyone's mealDays, not just your own.
+      allow read: if isSignedIn();
+
+      allow create, update: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && docId == request.resource.data.uid + '_' + request.resource.data.date
+        && guestInRange(request.resource.data.noonGuests)
+        && guestInRange(request.resource.data.nightGuests)
+        && fieldOk('noon') && fieldOk('night')
+        && fieldOk('noonGuests') && fieldOk('nightGuests');
+
+      // Always write false/0 explicitly instead of deleting — keeps the cutoff
+      // check above as the single source of truth for editability.
+      allow delete: if false;
+    }
+
+    match /messCancellations/{date} {
+      allow read: if isSignedIn();
+      // Manager cancellations bypass the cutoff entirely (emergency override).
+      allow create, update: if isManager()
+        && request.resource.data.date == date
+        && request.resource.data.setBy == request.auth.uid;
+      allow delete: if isManager();
+    }
+  }
+}

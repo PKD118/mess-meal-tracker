@@ -1,0 +1,62 @@
+{
+  "tabs": {
+    "dashboard": "Dashboard",
+    "planner": "Planner",
+    "history": "History"
+  },
+  "common": {
+    "appName": "Mess Meal Tracker",
+    "noon": "Noon",
+    "night": "Night",
+    "both": "Both",
+    "on": "On",
+    "off": "Off",
+    "save": "Save",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "guests": "Guests",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "errorGeneric": "Something went wrong."
+  },
+  "login": {
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log In",
+    "error": "Wrong email or password.",
+    "contactManager": "Can't log in? Contact your manager."
+  },
+  "dashboard": {
+    "today": "Today",
+    "yourTotal": "Your total",
+    "messTotals": "Mess totals today",
+    "roster": "See who's eating",
+    "rosterHide": "Hide",
+    "monthToDate": "This month",
+    "meals": "meals",
+    "plannerButton": "Plan next 10 days",
+    "managerCardTitle": "Cancel mess meal",
+    "cancelNoon": "Cancel Noon",
+    "cancelNight": "Cancel Night",
+    "cutoffPassed": "Cutoff passed",
+    "emptyTitle": "No meal history yet"
+  },
+  "planner": {
+    "title": "Meal Planner",
+    "cancelledByMess": "Cancelled by mess",
+    "saveDay": "Save"
+  },
+  "history": {
+    "title": "History",
+    "empty": "No off days yet",
+    "offBySelf": "You turned this off",
+    "offByMess": "Cancelled mess-wide"
+  },
+  "dialogs": {
+    "confirmSaveToday": "Save changes for today?",
+    "confirmSaveDate": "Save changes for {{date}}?",
+    "guestCancelQuestion": "You have {{count}} guest meal(s) for {{slot}}. Cancel those too?",
+    "managerCancelConfirm": "Cancel {{slot}} for everyone today?"
+  }
+}
