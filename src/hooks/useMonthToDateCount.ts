@@ -11,10 +11,14 @@ function firstOfMonthISO(dateISO: string): string {
 
 // Total meals (self + guests) taken from the 1st of the current Dhaka-calendar
 // month through today, inclusive. Iterates every calendar day in range, not
-// just days with a mealDays doc — most days have no doc (default ON).
-export function useMonthToDateCount(uid: string | undefined) {
+// just days with a mealDays doc — most days have no doc (default ON). Clamped
+// to the account's creation date so days before the member even existed don't
+// get counted as default-on meals they never actually had.
+export function useMonthToDateCount(uid: string | undefined, accountCreatedAt: number | undefined) {
   const today = todayDhakaISO();
-  const start = firstOfMonthISO(today);
+  const monthStart = firstOfMonthISO(today);
+  const createdDate = accountCreatedAt ? todayDhakaISO(new Date(accountCreatedAt)) : monthStart;
+  const start = createdDate > monthStart ? createdDate : monthStart;
   const { byDate: mealByDate, loading: mealLoading, error: mealError } = useOwnMealDays(uid, start, today);
   const { byDate: cancelByDate, loading: cancelLoading, error: cancelError } = useMessCancellationsRange(start, today);
 

@@ -18,27 +18,35 @@
     "guests": "Guests",
     "loading": "Loading…",
     "retry": "Retry",
-    "errorGeneric": "Something went wrong."
+    "errorGeneric": "Something went wrong.",
+    "signOut": "Sign out"
   },
   "login": {
     "email": "Email",
     "password": "Password",
     "submit": "Log In",
     "error": "Wrong email or password.",
-    "contactManager": "Can't log in? Contact your manager."
+    "contactManager": "Can't log in? Contact your manager.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "dashboard": {
+    "greeting": "Hi, {{name}}",
     "today": "Today",
     "yourTotal": "Your total",
     "messTotals": "Mess totals today",
     "roster": "See who's eating",
     "rosterHide": "Hide",
-    "monthToDate": "This month",
+    "monthToDate": "Your total meals this month",
     "meals": "meals",
     "plannerButton": "Plan next 10 days",
     "managerCardTitle": "Cancel mess meal",
     "cancelNoon": "Cancel Noon",
     "cancelNight": "Cancel Night",
+    "cancelledNoon": "Noon cancelled",
+    "cancelledNight": "Night cancelled",
+    "holdToRevert": "Hold 5s to undo",
+    "mealCancelled": "Cancelled by manager",
     "cutoffPassed": "Cutoff passed",
     "emptyTitle": "No meal history yet"
   },
@@ -57,6 +65,7 @@
     "confirmSaveToday": "Save changes for today?",
     "confirmSaveDate": "Save changes for {{date}}?",
     "guestCancelQuestion": "You have {{count}} guest meal(s) for {{slot}}. Cancel those too?",
-    "managerCancelConfirm": "Cancel {{slot}} for everyone today?"
+    "managerCancelConfirm": "Cancel {{slot}} for everyone today?",
+    "managerRevertConfirm": "Restore {{slot}} for everyone today?"
   }
 }

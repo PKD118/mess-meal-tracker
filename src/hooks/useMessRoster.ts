@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import type { MealDayDoc, MessCancellationDoc } from '@/types/models';
 import { useAllUsers } from '@/hooks/useAllUsers';
@@ -22,9 +22,8 @@ export function useMessRoster(date: string) {
 
   useEffect(() => {
     setMealDaysLoading(true);
-    const q = query(collection(db, 'mealDays'), where('date', '==', date));
     const unsub = onSnapshot(
-      q,
+      collection(db, 'mealDays', date, 'entries'),
       (snap) => {
         const next: Record<string, MealDayDoc> = {};
         snap.docs.forEach((d) => {

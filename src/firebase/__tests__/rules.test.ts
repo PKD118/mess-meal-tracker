@@ -16,6 +16,11 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 const MEMBER_UID = 'member1';
 const OTHER_MEMBER_UID = 'member2';
 const MANAGER_UID = 'manager1';
+const NEW_MEMBER_UID = 'member3'; // no profile doc seeded — for create-path tests
+
+function newProfile(overrides: Partial<Record<string, unknown>> = {}) {
+  return { name: '', phone: '', isManager: false, locale: 'en', createdAt: 0, ...overrides };
+}
 
 const FAR_FUTURE_DATE = '2099-01-10'; // cutoffs definitely haven't passed
 const FAR_PAST_DATE = '2000-01-10'; // cutoffs definitely have passed
@@ -77,9 +82,24 @@ describe('users collection', () => {
     await assertFails(getDoc(doc(ctx.firestore(), 'users', MEMBER_UID)));
   });
 
-  test('client cannot create/overwrite a users doc', async () => {
+  test('client cannot overwrite an existing users doc via create-shaped payload', async () => {
     const ctx = testEnv.authenticatedContext(MEMBER_UID);
     await assertFails(setDoc(doc(ctx.firestore(), 'users', MEMBER_UID), { name: 'Hacked' }));
+  });
+
+  test('member can bootstrap their own profile on first login, defaulting to non-manager', async () => {
+    const ctx = testEnv.authenticatedContext(NEW_MEMBER_UID);
+    await assertSucceeds(setDoc(doc(ctx.firestore(), 'users', NEW_MEMBER_UID), newProfile()));
+  });
+
+  test('member cannot self-escalate isManager at creation time', async () => {
+    const ctx = testEnv.authenticatedContext(NEW_MEMBER_UID);
+    await assertFails(setDoc(doc(ctx.firestore(), 'users', NEW_MEMBER_UID), newProfile({ isManager: true })));
+  });
+
+  test('member cannot create a profile doc for someone else', async () => {
+    const ctx = testEnv.authenticatedContext(MEMBER_UID);
+    await assertFails(setDoc(doc(ctx.firestore(), 'users', NEW_MEMBER_UID), newProfile()));
   });
 
   test('member can update their own locale field only', async () => {
@@ -104,52 +124,58 @@ describe('users collection', () => {
 });
 
 describe('mealDays cutoff + ownership', () => {
-  test('member can create/edit their own mealDays doc for a far-future date', async () => {
+  test('member can create/edit their own entry for a far-future date', async () => {
     const ctx = testEnv.authenticatedContext(MEMBER_UID);
     const data = mealDay(MEMBER_UID, FAR_FUTURE_DATE, { noon: true, noonGuests: 3 });
-    await assertSucceeds(setDoc(doc(ctx.firestore(), 'mealDays', `${MEMBER_UID}_${FAR_FUTURE_DATE}`), data));
+    await assertSucceeds(setDoc(doc(ctx.firestore(), 'mealDays', FAR_FUTURE_DATE, 'entries', MEMBER_UID), data));
   });
 
   test('member cannot change a real value for a far-past date (cutoff long passed)', async () => {
     const ctx = testEnv.authenticatedContext(MEMBER_UID);
     const data = mealDay(MEMBER_UID, FAR_PAST_DATE, { noon: true });
-    await assertFails(setDoc(doc(ctx.firestore(), 'mealDays', `${MEMBER_UID}_${FAR_PAST_DATE}`), data));
+    await assertFails(setDoc(doc(ctx.firestore(), 'mealDays', FAR_PAST_DATE, 'entries', MEMBER_UID), data));
   });
 
   test('writing unchanged default values for a far-past date is allowed (no-op, not a real edit)', async () => {
     const ctx = testEnv.authenticatedContext(MEMBER_UID);
     // doc doesn't exist yet -> prior values default to false/0 -> this write changes nothing
     const data = mealDay(MEMBER_UID, FAR_PAST_DATE);
-    await assertSucceeds(setDoc(doc(ctx.firestore(), 'mealDays', `${MEMBER_UID}_${FAR_PAST_DATE}`), data));
+    await assertSucceeds(setDoc(doc(ctx.firestore(), 'mealDays', FAR_PAST_DATE, 'entries', MEMBER_UID), data));
   });
 
-  test('member cannot write to another member\'s mealDays doc', async () => {
+  test('member cannot write to another member\'s entry', async () => {
     const ctx = testEnv.authenticatedContext(MEMBER_UID);
     const data = mealDay(OTHER_MEMBER_UID, FAR_FUTURE_DATE, { noon: true });
-    await assertFails(setDoc(doc(ctx.firestore(), 'mealDays', `${OTHER_MEMBER_UID}_${FAR_FUTURE_DATE}`), data));
+    await assertFails(setDoc(doc(ctx.firestore(), 'mealDays', FAR_FUTURE_DATE, 'entries', OTHER_MEMBER_UID), data));
+  });
+
+  test('entry date must match the parent day doc', async () => {
+    const ctx = testEnv.authenticatedContext(MEMBER_UID);
+    const data = mealDay(MEMBER_UID, FAR_PAST_DATE, { noon: true }); // date field mismatches path's FAR_FUTURE_DATE
+    await assertFails(setDoc(doc(ctx.firestore(), 'mealDays', FAR_FUTURE_DATE, 'entries', MEMBER_UID), data));
   });
 
   test('guest count of 5 is allowed, 6 is rejected', async () => {
     const ctx = testEnv.authenticatedContext(MEMBER_UID);
     await assertSucceeds(setDoc(
-      doc(ctx.firestore(), 'mealDays', `${MEMBER_UID}_${FAR_FUTURE_DATE}`),
+      doc(ctx.firestore(), 'mealDays', FAR_FUTURE_DATE, 'entries', MEMBER_UID),
       mealDay(MEMBER_UID, FAR_FUTURE_DATE, { noonGuests: 5 })
     ));
     await assertFails(setDoc(
-      doc(ctx.firestore(), 'mealDays', `${MEMBER_UID}_${FAR_FUTURE_DATE}`),
+      doc(ctx.firestore(), 'mealDays', FAR_FUTURE_DATE, 'entries', MEMBER_UID),
       mealDay(MEMBER_UID, FAR_FUTURE_DATE, { noonGuests: 6 })
     ));
   });
 
-  test('any signed-in member can read any mealDays doc (roster needs this)', async () => {
+  test('any signed-in member can read any entry (roster needs this)', async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(context.firestore(), 'mealDays', `${OTHER_MEMBER_UID}_${FAR_FUTURE_DATE}`),
+        doc(context.firestore(), 'mealDays', FAR_FUTURE_DATE, 'entries', OTHER_MEMBER_UID),
         mealDay(OTHER_MEMBER_UID, FAR_FUTURE_DATE, { noon: true })
       );
     });
     const ctx = testEnv.authenticatedContext(MEMBER_UID);
-    await assertSucceeds(getDoc(doc(ctx.firestore(), 'mealDays', `${OTHER_MEMBER_UID}_${FAR_FUTURE_DATE}`)));
+    await assertSucceeds(getDoc(doc(ctx.firestore(), 'mealDays', FAR_FUTURE_DATE, 'entries', OTHER_MEMBER_UID)));
   });
 });
 

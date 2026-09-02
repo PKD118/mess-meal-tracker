@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { colors, fonts, shadow } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
 import { useLocale } from '@/context/LocaleContext';
 import { useOwnMealDays } from '@/hooks/useOwnMealDays';
@@ -44,40 +45,45 @@ export default function HistoryScreen() {
   const offByLabel = (offBy: OffBy) => (offBy === 'mess' ? t('history.offByMess') : t('history.offBySelf'));
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t('history.title')}</Text>
 
       {rows.length === 0 ? (
         <Text style={styles.empty}>{t('history.empty')}</Text>
       ) : (
-        rows.map((row) => (
-          <View key={row.date} style={styles.row}>
-            <Text style={styles.date}>{formatDayLabel(row.date, locale)}</Text>
-            {row.noonOffBy && (
-              <Text style={styles.detail}>{t('common.noon')}: {offByLabel(row.noonOffBy)}</Text>
-            )}
-            {row.nightOffBy && (
-              <Text style={styles.detail}>{t('common.night')}: {offByLabel(row.nightOffBy)}</Text>
-            )}
-          </View>
-        ))
+        <View style={styles.card}>
+          {rows.map((row, i) => (
+            <View key={row.date} style={[styles.row, i === rows.length - 1 && styles.rowLast]}>
+              <Text style={styles.date}>{formatDayLabel(row.date, locale)}</Text>
+              {row.noonOffBy && (
+                <Text style={styles.detail}>{t('common.noon')}: {offByLabel(row.noonOffBy)}</Text>
+              )}
+              {row.nightOffBy && (
+                <Text style={styles.detail}>{t('common.night')}: {offByLabel(row.nightOffBy)}</Text>
+              )}
+            </View>
+          ))}
+        </View>
       )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  errorText: { color: '#C0392B', fontSize: 15 },
-  content: { padding: 16, gap: 12 },
-  title: { fontSize: 18, fontWeight: '700', color: '#1F2933' },
-  empty: { fontSize: 14, color: '#52606D', marginTop: 24, textAlign: 'center' },
+  screen: { flex: 1, backgroundColor: colors.page },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.page },
+  errorText: { color: colors.danger, fontSize: 15, fontFamily: fonts.bodyMedium },
+  content: { padding: 16, gap: 14 },
+  title: { fontSize: 20, color: colors.textPrimary, fontFamily: fonts.headingBold, marginBottom: 2 },
+  empty: { fontSize: 14, color: colors.textSecondary, marginTop: 24, textAlign: 'center', fontFamily: fonts.body },
+  card: { backgroundColor: colors.surface, borderRadius: 16, paddingHorizontal: 16, ...shadow.card },
   row: {
     borderBottomWidth: 1,
-    borderBottomColor: '#E4E7EB',
-    paddingVertical: 10,
+    borderBottomColor: colors.border,
+    paddingVertical: 12,
     gap: 2,
   },
-  date: { fontSize: 14, fontWeight: '700', color: '#1F2933' },
-  detail: { fontSize: 13, color: '#52606D' },
+  rowLast: { borderBottomWidth: 0 },
+  date: { fontSize: 14, color: colors.textPrimary, fontFamily: fonts.heading },
+  detail: { fontSize: 13, color: colors.textSecondary, fontFamily: fonts.body },
 });

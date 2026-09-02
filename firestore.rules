@@ -53,35 +53,54 @@ service cloud.firestore {
         : request.resource.data[field] == priorBoolValue(field);
     }
 
-    function fieldOk(field) {
+    // `date` is the path segment (the day-wise doc this entry lives under),
+    // never the client-supplied field — a client can't lie about which day's
+    // cutoff applies by mismatching the two.
+    function fieldOk(field, date) {
       return fieldUnchanged(field)
-        || beforeCutoff(request.resource.data.date, slotOf(field));
+        || beforeCutoff(date, slotOf(field));
     }
 
     match /users/{uid} {
       // Full profile readable by any signed-in member (small, trusted mess).
       allow read: if isSignedIn();
-      // Members are enrolled (name/phone/isManager) by an admin via console/admin
-      // SDK. The one self-service exception: a member may update their own
+      // Self-service bootstrap on first login: a member can create their OWN
+      // profile doc, always starting as a non-manager. isManager can only be
+      // granted afterward by an admin via console/admin SDK — never by the
+      // member themselves, at creation or via the update rule below.
+      allow create: if isSignedIn() && request.auth.uid == uid
+        && request.resource.data.isManager == false
+        && request.resource.data.name is string
+        && request.resource.data.phone is string
+        && request.resource.data.createdAt is number
+        && request.resource.data.locale in ['en', 'bn'];
+      // The one self-service update exception: a member may update their own
       // `locale` preference — and nothing else, so isManager can't be
-      // self-escalated through this door.
+      // self-escalated through this door either.
       allow update: if isSignedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['locale'])
         && request.resource.data.locale in ['en', 'bn'];
-      allow create, delete: if false;
+      allow delete: if false;
     }
 
-    match /mealDays/{docId} {
-      // Roster + history views need to read everyone's mealDays, not just your own.
+    // collectionGroup('entries') reads (own-history + month-to-date queries
+    // span every date, not one known parent) only pick up permission from a
+    // rule expressed with the recursive wildcard — a rule nested under a
+    // fixed parent path does not extend to collection-group-scoped queries.
+    match /{path=**}/entries/{uid} {
       allow read: if isSignedIn();
+    }
 
+    // Day-wise: one doc per date, holding one entry per member (+ their guests).
+    match /mealDays/{date}/entries/{uid} {
       allow create, update: if isSignedIn()
-        && request.resource.data.uid == request.auth.uid
-        && docId == request.resource.data.uid + '_' + request.resource.data.date
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.date == date
         && guestInRange(request.resource.data.noonGuests)
         && guestInRange(request.resource.data.nightGuests)
-        && fieldOk('noon') && fieldOk('night')
-        && fieldOk('noonGuests') && fieldOk('nightGuests');
+        && fieldOk('noon', date) && fieldOk('night', date)
+        && fieldOk('noonGuests', date) && fieldOk('nightGuests', date);
 
       // Always write false/0 explicitly instead of deleting — keeps the cutoff
       // check above as the single source of truth for editability.

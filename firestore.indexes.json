@@ -1,8 +1,8 @@
 {
   "indexes": [
     {
-      "collectionGroup": "mealDays",
-      "queryScope": "COLLECTION",
+      "collectionGroup": "entries",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         { "fieldPath": "uid", "order": "ASCENDING" },
         { "fieldPath": "date", "order": "ASCENDING" }

@@ -1,14 +1,16 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { colors, fonts, shadow, accentPalette } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
 import { useLocale } from '@/context/LocaleContext';
 import { useOwnMealDays } from '@/hooks/useOwnMealDays';
 import { useMessCancellationsRange } from '@/hooks/useMessCancellationsRange';
 import { DayMealEditor } from '@/components/DayMealEditor';
 import { writeOwnMealDay } from '@/firebase/mealWrites';
-import { todayDhakaISO, addDaysISO, isSlotEditable } from '@/utils/cutoff';
-import { formatDayLabel } from '@/utils/formatDate';
+import { todayDhakaISO, addDaysISO, isSlotEditable, parseISODateLocal } from '@/utils/cutoff';
+import { formatDayLabel, formatWeekday, formatMonthDay } from '@/utils/formatDate';
 import type { SlotFields } from '@/hooks/useMealSlotEditor';
 
 const DEFAULT_FIELDS: SlotFields = { noon: false, night: false, noonGuests: 0, nightGuests: 0 };
@@ -53,24 +55,32 @@ export default function PlannerScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t('planner.title')}</Text>
-      {dates.map((date) => {
+      {dates.map((date, i) => {
         const current = mealByDate[date] ?? DEFAULT_FIELDS;
         const cancellation = cancelByDate[date];
         const noonCancelled = cancellation?.noon ?? false;
         const nightCancelled = cancellation?.night ?? false;
+        const accent = accentPalette[i % accentPalette.length];
 
         return (
           <View key={date} style={styles.dayCard}>
-            <Text style={styles.dayLabel}>{formatDayLabel(date, locale)}</Text>
-            {(noonCancelled || nightCancelled) && (
-              <Text style={styles.cancelledBadge}>{t('planner.cancelledByMess')}</Text>
-            )}
+            <View style={styles.dayHeader}>
+              <LinearGradient colors={[accent.from, accent.to]} style={styles.dateBadge}>
+                <Text style={styles.dateBadgeNum}>{parseISODateLocal(date).getDate()}</Text>
+              </LinearGradient>
+              <View>
+                <Text style={styles.weekday}>{formatWeekday(date, locale)}</Text>
+                <Text style={styles.monthDay}>{formatMonthDay(date, locale)}</Text>
+              </View>
+            </View>
             <DayMealEditor
               current={current}
               editableNoon={isSlotEditable(date, 'noon') && !noonCancelled}
               editableNight={isSlotEditable(date, 'night') && !nightCancelled}
+              noonCancelled={noonCancelled}
+              nightCancelled={nightCancelled}
               confirmMessage={t('dialogs.confirmSaveDate', { date: formatDayLabel(date, locale) })}
               onSave={(fields) => {
                 if (user) return writeOwnMealDay({ uid: user.uid, date, ...fields });
@@ -84,17 +94,21 @@ export default function PlannerScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  errorText: { color: '#C0392B', fontSize: 15 },
-  content: { padding: 16, gap: 16 },
-  title: { fontSize: 18, fontWeight: '700', color: '#1F2933' },
+  screen: { flex: 1, backgroundColor: colors.page },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.page },
+  errorText: { color: colors.danger, fontSize: 15, fontFamily: fonts.bodyMedium },
+  content: { padding: 16, gap: 14 },
+  title: { fontSize: 20, color: colors.textPrimary, fontFamily: fonts.headingBold, marginBottom: 2 },
   dayCard: {
-    borderWidth: 1,
-    borderColor: '#E4E7EB',
-    borderRadius: 10,
-    padding: 12,
-    gap: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 14,
+    gap: 10,
+    ...shadow.card,
   },
-  dayLabel: { fontSize: 14, fontWeight: '700', color: '#1F2933' },
-  cancelledBadge: { fontSize: 12, color: '#8D5B00', backgroundColor: '#FFFBEA', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
+  dayHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  dateBadge: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  dateBadgeNum: { fontSize: 16, color: colors.textOnPrimary, fontFamily: fonts.headingBold },
+  weekday: { fontSize: 14, color: colors.textPrimary, fontFamily: fonts.heading },
+  monthDay: { fontSize: 12, color: colors.textSecondary, fontFamily: fonts.body },
 });

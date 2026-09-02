@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { subscribeToAuthState } from '@/firebase/auth';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { createOwnProfile } from '@/firebase/mealWrites';
 import type { UserProfile } from '@/types/models';
 
 interface AuthContextValue {
@@ -26,6 +27,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const { profile, loading: profileLoading } = useUserProfile(user?.uid);
+
+  // First login for this account: no profile doc yet — bootstrap one so the
+  // roster/manager checks have something to read instead of staying empty.
+  useEffect(() => {
+    if (!user || profileLoading || profile) return;
+    createOwnProfile(user.uid).catch(() => {});
+  }, [user, profileLoading, profile]);
 
   return (
     <AuthContext.Provider value={{ user, profile, authLoading, profileLoading }}>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
+import { colors, fonts } from '@/theme';
 import { useLocale } from '@/context/LocaleContext';
 import { useAuth } from '@/context/AuthContext';
 import { writeOwnLocale } from '@/firebase/mealWrites';
@@ -37,12 +38,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#EEF2F6',
+    borderRadius: 10,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
   },
   text: {
-    fontWeight: '600',
     fontSize: 14,
-    color: '#1F2933',
+    color: colors.textPrimary,
+    fontFamily: fonts.bodySemiBold,
   },
 });

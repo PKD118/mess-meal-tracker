@@ -18,27 +18,35 @@
     "guests": "গেস্ট",
     "loading": "লোড হচ্ছে…",
     "retry": "আবার চেষ্টা করুন",
-    "errorGeneric": "কিছু ভুল হয়েছে।"
+    "errorGeneric": "কিছু ভুল হয়েছে।",
+    "signOut": "সাইন আউট"
   },
   "login": {
     "email": "ইমেইল",
     "password": "পাসওয়ার্ড",
     "submit": "লগ ইন করুন",
     "error": "ভুল ইমেইল বা পাসওয়ার্ড।",
-    "contactManager": "লগ ইন করতে সমস্যা হচ্ছে? আপনার ম্যানেজারের সাথে যোগাযোগ করুন।"
+    "contactManager": "লগ ইন করতে সমস্যা হচ্ছে? আপনার ম্যানেজারের সাথে যোগাযোগ করুন।",
+    "showPassword": "পাসওয়ার্ড দেখান",
+    "hidePassword": "পাসওয়ার্ড লুকান"
   },
   "dashboard": {
+    "greeting": "হাই, {{name}}",
     "today": "আজ",
     "yourTotal": "আপনার মোট",
     "messTotals": "আজকের মেস মোট",
     "roster": "কে খাচ্ছে দেখুন",
     "rosterHide": "লুকান",
-    "monthToDate": "এই মাসে",
+    "monthToDate": "এই মাসে আপনার মোট খাবার",
     "meals": "টি খাবার",
     "plannerButton": "আগামী ১০ দিনের পরিকল্পনা",
     "managerCardTitle": "মেসের খাবার বাতিল করুন",
     "cancelNoon": "দুপুরের খাবার বাতিল",
     "cancelNight": "রাতের খাবার বাতিল",
+    "cancelledNoon": "দুপুরের খাবার বাতিল হয়েছে",
+    "cancelledNight": "রাতের খাবার বাতিল হয়েছে",
+    "holdToRevert": "৫ সেকেন্ড ধরে রাখুন",
+    "mealCancelled": "ম্যানেজার বাতিল করেছেন",
     "cutoffPassed": "সময়সীমা পার হয়েছে",
     "emptyTitle": "এখনও কোনো খাবারের তথ্য নেই"
   },
@@ -57,6 +65,7 @@
     "confirmSaveToday": "আজকের পরিবর্তন সংরক্ষণ করবেন?",
     "confirmSaveDate": "{{date}}-এর পরিবর্তন সংরক্ষণ করবেন?",
     "guestCancelQuestion": "{{slot}}-এর জন্য আপনার {{count}}টি অতিথি খাবার আছে। সেগুলোও বাতিল করবেন?",
-    "managerCancelConfirm": "আজ সবার জন্য {{slot}} বাতিল করবেন?"
+    "managerCancelConfirm": "আজ সবার জন্য {{slot}} বাতিল করবেন?",
+    "managerRevertConfirm": "আজ সবার জন্য {{slot}} আবার চালু করবেন?"
   }
 }

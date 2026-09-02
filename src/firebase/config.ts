@@ -4,7 +4,7 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 // from the underlying '@firebase/auth' package instead, which does — keeping
 // every auth import on the same resolved bundle avoids cross-build mismatches.
 import { initializeAuth, getReactNativePersistence, getAuth, type Auth } from '@firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { initializeFirestore, type Firestore } from '@firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -35,5 +35,10 @@ try {
 }
 
 export const auth = authInstance;
-export const db: Firestore = getFirestore(app);
+// Firestore's default WebChannel transport needs browser streaming-fetch,
+// which React Native's JS environment doesn't provide — onSnapshot listeners
+// hang silently on-device without long-polling forced on.
+export const db: Firestore = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
 export default app;
