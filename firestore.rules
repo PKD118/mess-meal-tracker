@@ -35,14 +35,26 @@ service cloud.firestore {
       return request.time < dateAtUtc(date) + duration.value(slot == 'noon' ? 3 : 12, 'h');
     }
 
-    function priorValue(field) {
-      return resource != null
-        ? resource.data[field]
-        : ((field == 'noonGuests' || field == 'nightGuests') ? 0 : false);
+    function isGuestField(field) {
+      return field == 'noonGuests' || field == 'nightGuests';
+    }
+
+    function priorBoolValue(field) {
+      return resource != null ? resource.data[field] : false;
+    }
+
+    function priorGuestValue(field) {
+      return resource != null ? resource.data[field] : 0;
+    }
+
+    function fieldUnchanged(field) {
+      return isGuestField(field)
+        ? request.resource.data[field] == priorGuestValue(field)
+        : request.resource.data[field] == priorBoolValue(field);
     }
 
     function fieldOk(field) {
-      return request.resource.data[field] == priorValue(field)
+      return fieldUnchanged(field)
         || beforeCutoff(request.resource.data.date, slotOf(field));
     }
 

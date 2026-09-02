@@ -27,6 +27,7 @@ yarn-debug.*
 yarn-error.*
 firestore-debug.log
 ui-debug.log
+firebase-debug.log
 
 # macOS
 .DS_Store
@@ -35,6 +36,10 @@ ui-debug.log
 # local env files
 .env
 .env*.local
+
+# Native Firebase config (unused — we're on the Firebase JS SDK, not
+# @react-native-firebase — but no reason to check these API keys into git)
+/Firebase/
 
 # typescript
 *.tsbuildinfo
